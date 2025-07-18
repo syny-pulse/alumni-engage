@@ -14,6 +14,9 @@ def index():
     # Get upcoming events
     events = Event.query.filter(Event.event_date >= datetime.utcnow()).order_by(Event.event_date.asc()).limit(3).all()
     
+    # Get latest job postings
+    latest_jobs = Job.query.filter_by(is_active=True).order_by(Job.created_at.desc()).limit(3).all()
+    
     jobs_count = Job.query.count()
     
     total_hosted_events = Event.query.filter(Event.event_date < datetime.now(timezone.utc)).count()
@@ -25,4 +28,4 @@ def index():
         'total_jobs': jobs_count
     }
     
-    return render_template('index.html', title='Home', news=news, events=events, stats=stats)
+    return render_template('index.html', title='Home', news=news, events=events, stats=stats, latest_jobs=latest_jobs)
