@@ -1,367 +1,48 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Manage Events - Admin Dashboard</title>
-    <style>
-        /* Reuse styles from manage_users.html for consistency */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
-            background: #fafafa;
-            min-height: 100vh;
-            color: #1a1a1a;
-        }
-
-        .dashboard-container {
-            display: flex;
-            min-height: 100vh;
-        }
-
-        /* Sidebar Styles */
-        .sidebar {
-            width: 280px;
-            background: white;
-            border-right: 1px solid #e5e7eb;
-            position: fixed;
-            height: 100vh;
-            overflow-y: auto;
-            z-index: 1000;
-        }
-
-        /* Main Content */
-        .main-content {
-            flex: 1;
-            margin-left: 280px;
-            padding: 40px;
-        }
-
-        .page-header {
-            margin-bottom: 30px;
-        }
-
-        .page-title {
-            font-size: 2rem;
-            font-weight: 600;
-            color: #1a1a1a;
-            margin-bottom: 4px;
-        }
-
-        .page-subtitle {
-            font-size: 1rem;
-            color: #6b7280;
-            font-weight: 400;
-        }
-
-        /* Events Table */
-        .events-container {
-            background: white;
-            border-radius: 12px;
-            border: 1px solid #e5e7eb;
-            overflow: hidden;
-        }
-
-        .events-header {
-            background: #8b5cf6;
-            color: white;
-            padding: 20px 24px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .events-header h2 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-
-        .events-table {
-            width: 100%;
-            border-collapse: collapse;
-        }
-
-        .events-table thead {
-            background: #f9fafb;
-            border-bottom: 1px solid #e5e7eb;
-        }
-
-        .events-table th {
-            padding: 16px 24px;
-            text-align: left;
-            font-weight: 500;
-            color: #374151;
-            font-size: 0.875rem;
-        }
-
-        .events-table td {
-            padding: 16px 24px;
-            border-bottom: 1px solid #f3f4f6;
-            color: #1a1a1a;
-            font-size: 0.875rem;
-        }
-
-        .events-table tbody tr {
-            transition: all 0.2s ease;
-        }
-
-        .events-table tbody tr:hover {
-            background: #f9fafb;
-        }
-
-        .event-name {
-            font-weight: 500;
-            color: #1a1a1a;
-        }
-
-        .event-date {
-            color: #6b7280;
-        }
-
-        .event-actions {
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
-
-        .btn {
-            width: 32px;
-            height: 32px;
-            border-radius: 6px;
-            border: none;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            text-decoration: none;
-        }
-
-        .btn svg {
-            width: 16px;
-            height: 16px;
-        }
-
-        .btn-primary {
-            background: #3b82f6;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background: #2563eb;
-        }
-
-        .btn-danger {
-            background: #ef4444;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background: #dc2626;
-        }
-
-        .btn-secondary {
-            background: #8b5cf6;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background: #7c3aed;
-        }
-
-        /* Pagination */
-        .pagination {
-            padding: 20px 24px;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 16px;
-            background: #f9fafb;
-            border-top: 1px solid #e5e7eb;
-        }
-
-        .pagination a {
-            background: #8b5cf6;
-            color: white;
-            padding: 8px 16px;
-            border-radius: 6px;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 0.875rem;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            gap: 6px;
-        }
-
-        .pagination a:hover {
-            background: #7c3aed;
-        }
-
-        .pagination a:disabled {
-            opacity: 0.5;
-            cursor: not-allowed;
-        }
-
-        .pagination span {
-            color: #6b7280;
-            font-weight: 500;
-            font-size: 0.875rem;
-        }
-
-        /* Empty State */
-        .empty-state {
-            text-align: center;
-            padding: 60px 20px;
-            color: #6b7280;
-        }
-
-        .empty-state-icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-        }
-
-        .empty-state-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-        }
-
-        .empty-state-text {
-            font-size: 0.875rem;
-            color: #9ca3af;
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-            .sidebar {
-                transform: translateX(-100%);
-                transition: transform 0.3s ease;
-            }
-            
-            .sidebar.open {
-                transform: translateX(0);
-            }
-            
-            .main-content {
-                margin-left: 0;
-                padding: 20px;
-            }
-            
-            .events-table {
-                font-size: 0.8rem;
-            }
-            
-            .events-table th,
-            .events-table td {
-                padding: 12px;
-            }
-            
-            .event-actions {
-                flex-direction: column;
-                gap: 4px;
-            }
-        }
-    </style>
-</head>
-<body>
-    <div class="dashboard-container">
-        {% include 'admin/_sidebar.html' %}
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="page-header">
-                <h1 class="page-title">Manage Events</h1>
-                <p class="page-subtitle">View and manage all events in your platform</p>
-            </div>
-
-            <div class="events-container">
-                <div class="events-header">
-                    <h2><span>📅</span> All Events</h2>
-                </div>
-                
-                {% if events.items %}
-                <table class="events-table">
-                    <thead>
-                        <tr>
-                            <th>Event Name</th>
-                            <th>Date</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {% for event in events.items %}
-                        <tr>
-                            <td>
-                                <div class="event-name">{{ event.title }}</div>
-                            </td>
-                            <td class="event-date">{{ event.event_date.strftime('%Y-%m-%d %H:%M') }}</td>
-                            <td>
-                                <div class="event-actions">
-                                    <a href="{{ url_for('admin.edit_event', event_id=event.id) }}" class="btn btn-primary" title="Edit">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="M12 20h9" />
-                                            <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4 12.5-12.5z" />
-                                        </svg>
-                                    </a>
-                                    <a href="{{ url_for('messages.compose', recipient_id=event.created_by) }}" class="btn btn-secondary" title="Message Creator">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <path d="m3 21 1.9-5.7a8.5 8.5 0 1 1 3.8 3.8z"/>
-                                        </svg>
-                                    </a>
-                                    <a href="{{ url_for('admin.delete_event', event_id=event.id) }}" 
-                                       class="btn btn-danger" 
-                                       title="Delete"
-                                       onclick="return confirm('Are you sure you want to delete this event? This action cannot be undone.');">
-                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                            <polyline points="3,6 5,6 21,6"/>
-                                            <path d="m19,6v14a2,2 0 0,1-2,2H7a2,2 0 0,1-2-2V6m3,0V4a2,2 0 0,1 2-2h4a2,2 0 0,1 2,2v2"/>
-                                            <line x1="10" y1="11" x2="10" y2="17"/>
-                                            <line x1="14" y1="11" x2="14" y2="17"/>
-                                        </svg>
-                                    </a>
-                                </div>
-                            </td>
-                        </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-                {% else %}
-                <div class="empty-state">
-                    <div class="empty-state-icon">📅</div>
-                    <div class="empty-state-title">No Events Found</div>
-                    <div class="empty-state-text">There are no events created in the system yet.</div>
-                </div>
-                {% endif %}
-
-                {% if events.items %}
-                <div class="pagination">
-                    {% if events.has_prev %}
-                    <a href="{{ url_for('admin.manage_events', page=events.prev_num) }}">
-                        <span>←</span> Previous
-                    </a>
-                    {% endif %}
-                    
-                    <span>Page {{ events.page }} of {{ events.pages }}</span>
-                    
-                    {% if events.has_next %}
-                    <a href="{{ url_for('admin.manage_events', page=events.next_num) }}">
-                        Next <span>→</span>
-                    </a>
-                    {% endif %}
-                </div>
-                {% endif %}
-            </div>
-        </main>
+{% extends 'base.html' %}
+{% block title %}Manage Events{% endblock %}
+{% block content %}
+<div class="container" style="max-width: 1100px; margin: 0 auto; padding: 40px 0;">
+    <h1 style="font-size: 2.2rem; font-weight: 700; margin-bottom: 32px; background: linear-gradient(135deg, #8b5cf6, #06b6d4); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">Manage Events</h1>
+    <div style="margin-bottom: 32px; text-align: right;">
+        <a href="{{ url_for('events.create_event') }}" class="btn" style="background: linear-gradient(135deg, #8b5cf6, #06b6d4); color: white; padding: 12px 28px; border-radius: 10px; font-weight: 600; text-decoration: none;">+ Create Event</a>
     </div>
-</body>
-</html>
+    {% if events.items|length == 0 %}
+        <div style="background: #f8fafc; border-radius: 16px; padding: 40px; text-align: center; border: 1px dashed #e2e8f0; color: #64748b;">
+            <div style="font-size: 2.5rem; margin-bottom: 12px;">📅</div>
+            <div style="font-size: 1.3rem; font-weight: 600; margin-bottom: 8px;">No events found</div>
+            <div style="font-size: 1rem; color: #94a3b8;">Start by creating a new event.</div>
+        </div>
+    {% else %}
+    <div style="display: grid; gap: 28px;">
+        {% for event in events.items %}
+        <div style="background: white; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border: 1px solid #e2e8f0; padding: 28px 32px; display: flex; align-items: center; justify-content: space-between; gap: 24px;">
+            <div style="flex: 1; min-width: 0;">
+                <div style="font-size: 1.2rem; font-weight: 700; color: #1a1a1a; margin-bottom: 4px;">{{ event.title }}</div>
+                <div style="color: #64748b; font-size: 1rem; margin-bottom: 2px;">{{ event.venue }}</div>
+                <div style="color: #94a3b8; font-size: 0.95rem;">{{ event.event_date.strftime('%b %d, %Y at %I:%M %p') }}</div>
+                <div style="margin-top: 8px;">
+                    <span style="background: #e0e7ff; color: #6366f1; padding: 4px 12px; border-radius: 8px; font-size: 0.9rem; font-weight: 500;">{{ 'Active' if event.is_active else 'Inactive' }}</span>
+                </div>
+            </div>
+            <div style="display: flex; gap: 12px;">
+                <a href="{{ url_for('events.event_detail', event_id=event.id) }}" class="btn" style="background: #f3e8ff; color: #8b5cf6; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none;">View</a>
+                <a href="{{ url_for('events.edit_event', event_id=event.id) }}" class="btn" style="background: #fef9c3; color: #f59e0b; padding: 10px 18px; border-radius: 8px; font-weight: 600; text-decoration: none;">Edit</a>
+                <form method="post" action="{{ url_for('events.delete_event', event_id=event.id) }}" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Are you sure you want to delete this event?');" style="background: #fee2e2; color: #ef4444; padding: 10px 18px; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">Delete</button>
+                </form>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    <div style="margin-top: 32px; text-align: center;">
+        {% if events.has_prev %}
+            <a href="{{ url_for('admin.manage_events', page=events.prev_num) }}" style="margin-right: 12px; color: #8b5cf6; text-decoration: none; font-weight: 500;">&larr; Prev</a>
+        {% endif %}
+        <span style="color: #64748b; font-size: 1rem;">Page {{ events.page }} of {{ events.pages }}</span>
+        {% if events.has_next %}
+            <a href="{{ url_for('admin.manage_events', page=events.next_num) }}" style="margin-left: 12px; color: #8b5cf6; text-decoration: none; font-weight: 500;">Next &rarr;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %} 
