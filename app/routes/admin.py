@@ -25,12 +25,18 @@ def dashboard():
     unread_messages = Message.query.filter_by(recipient_id=current_user.id, is_read=False).count()
     # List of users for admin to message (exclude self)
     users_for_messaging = User.query.filter(User.id != current_user.id).order_by(User.first_name.asc()).all()
+    # Recent users (last 5)
+    recent_users = User.query.order_by(User.created_at.desc()).limit(5).all()
+    # Upcoming events (next 5)
+    from datetime import datetime
+    upcoming_events = Event.query.filter(Event.event_date >= datetime.utcnow()).order_by(Event.event_date.asc()).limit(5).all()
     return render_template('admin/dashboard.html', title='Admin Dashboard',
                            user_count=user_count, event_count=event_count,
                            job_count=job_count, testimonial_count=testimonial_count,
                            pending_jobs=pending_jobs, pending_testimonials=pending_testimonials,
                            unread_contacts=unread_contacts, unread_messages=unread_messages,
-                           users_for_messaging=users_for_messaging)
+                           users_for_messaging=users_for_messaging,
+                           recent_users=recent_users, upcoming_events=upcoming_events)
 
 @bp.route('/users')
 @login_required
@@ -86,4 +92,59 @@ def manage_events():
         page=page, per_page=current_app.config['EVENTS_PER_PAGE'], error_out=False)
     return render_template('admin/manage_events.html', title='Manage Events', events=events)
 
-# Similar routes for managing news, jobs, testimonials, and contact submissions
+@bp.route('/events/<int:event_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    from app.utils.forms import EventForm
+    form = EventForm(obj=event)
+    if form.validate_on_submit():
+        form.populate_obj(event)
+        db.session.commit()
+        flash('Event updated successfully.', 'success')
+        return redirect(url_for('admin.manage_events'))
+    return render_template('events/create.html', title='Edit Event', form=form, event=event)
+
+@bp.route('/events/<int:event_id>/delete')
+@login_required
+@admin_required
+def delete_event(event_id):
+    event = Event.query.get_or_404(event_id)
+    db.session.delete(event)
+    db.session.commit()
+    flash('Event has been deleted.', 'success')
+    return redirect(url_for('admin.manage_events'))
+
+@bp.route('/jobs')
+@login_required
+@admin_required
+def manage_jobs():
+    page = request.args.get('page', 1, type=int)
+    jobs = Job.query.order_by(Job.created_at.desc()).paginate(
+        page=page, per_page=current_app.config['JOBS_PER_PAGE'], error_out=False)
+    return render_template('admin/manage_jobs.html', title='Manage Jobs', jobs=jobs)
+
+@bp.route('/jobs/<int:job_id>/edit', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    from app.utils.forms import JobForm
+    form = JobForm(obj=job)
+    if form.validate_on_submit():
+        form.populate_obj(job)
+        db.session.commit()
+        flash('Job updated successfully.', 'success')
+        return redirect(url_for('admin.manage_jobs'))
+    return render_template('jobs/create.html', title='Edit Job', form=form, job=job)
+
+@bp.route('/jobs/<int:job_id>/delete')
+@login_required
+@admin_required
+def delete_job(job_id):
+    job = Job.query.get_or_404(job_id)
+    db.session.delete(job)
+    db.session.commit()
+    flash('Job has been deleted.', 'success')
+    return redirect(url_for('admin.manage_jobs'))

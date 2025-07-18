@@ -5,7 +5,7 @@ from werkzeug.security import generate_password_hash, check_password_hash
 # Use pbkdf2:sha256 for password hashing for compatibility
 from flask_login import UserMixin
 from app import db, login
-import jwt 
+import jwt
 
 class User(UserMixin, db.Model):
     __tablename__ = 'users'
